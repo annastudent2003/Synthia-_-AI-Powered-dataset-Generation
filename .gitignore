@@ -44,9 +44,6 @@ __pycache__/
 *.ckpt
 
 # data folders
-/backend/python_ml/data/output/
-/backend/python_ml/data/input/test/
-python_ml/data/output/
 python_ml/__pycache__/
 
 # virtual environments
