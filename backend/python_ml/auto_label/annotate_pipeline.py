@@ -15,18 +15,19 @@ def annotate_folder(
     out_coco_json: str,
     sam_checkpoint_path: str,
     sam_model_type: str = "vit_b",
-    category_name: str = "object"
+    category_name: str = "object",
 ) -> str:
     """
     Run SAM + Boxes + MiDaS on a folder of images and export COCO JSON.
     """
-    ensure_dir(out_mask_dir); ensure_dir(out_poly_dir)
-    ensure_dir(out_depth_dir); ensure_dir(os.path.dirname(out_coco_json))
+    ensure_dir(out_mask_dir)
+    ensure_dir(out_poly_dir)
+    ensure_dir(out_depth_dir)
+    ensure_dir(os.path.dirname(out_coco_json))
 
-    image_paths = sorted(glob.glob(os.path.join(img_dir, "*.*")))[:2]
+    image_paths = sorted(glob.glob(os.path.join(img_dir, "*.*")))
 
     img_id, ann_id = 1, 1
-
     images_coco: List[Dict[str, Any]] = []
     annotations_coco: List[Dict[str, Any]] = []
     categories = [{"id": 1, "name": category_name}]
@@ -41,7 +42,7 @@ def annotate_folder(
             out_mask_dir=out_mask_dir,
             out_poly_dir=out_poly_dir,
             sam_checkpoint_path=sam_checkpoint_path,
-            model_type=sam_model_type
+            model_type=sam_model_type,
         )
 
         # b) Boxes
@@ -57,7 +58,7 @@ def annotate_folder(
             "id": img_id,
             "file_name": os.path.basename(image_path),
             "height": h,
-            "width": w
+            "width": w,
         })
 
         # e) Build annotation entries
@@ -73,7 +74,7 @@ def annotate_folder(
                 "bbox": [int(x), int(y), int(w_box), int(h_box)],
                 "area": int(box_inst["area"]),
                 "iscrowd": 0,
-                "segmentation": sam_inst["polygons"]
+                "segmentation": sam_inst["polygons"],
             })
             ann_id += 1
 
@@ -85,5 +86,19 @@ def annotate_folder(
 
     coco = build_coco(images_coco, annotations_coco, categories)
     write_coco(out_coco_json, coco)
-    print(f"[✓] COCO saved at: {out_coco_json}")
+    print(f"[OK] COCO saved at: {out_coco_json}")
     return out_coco_json
+
+if __name__ == "__main__":
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    img_dir = os.path.join(base_dir, "..", "data", "input", "images")
+    out_base = os.path.join(base_dir, "..", "data", "output")
+
+    annotate_folder(
+        img_dir=img_dir,
+        out_mask_dir=os.path.join(out_base, "masks"),
+        out_poly_dir=os.path.join(out_base, "polygons"),
+        out_depth_dir=os.path.join(out_base, "depth"),
+        out_coco_json=os.path.join(out_base, "coco", "annotations.json"),
+        sam_checkpoint_path=os.path.join(base_dir, "sam_vit_b.pth"),
+    )

@@ -19,22 +19,53 @@ function zipDirectory(sourceDir, outPath) {
   });
 }
 
+router.post("/preview", async (req, res) => {
+  try {
+    const inputImagesDir = path.join(process.cwd(), "python_ml", "data", "input", "images");
+    const inputFiles = fs.readdirSync(inputImagesDir);
+    const imagePreviews = inputFiles.slice(0, 10).map(file => ({
+      url: `http://localhost:5000/images/${file}`,
+    }));
+
+    res.json({
+      message: "Preview images loaded successfully",
+      images: imagePreviews,
+    });
+  } catch (err) {
+    console.error("❌ Preview Error:", err);
+    res.status(500).json({ error: "Failed to load preview images" });
+  }
+});
+
+
+
 router.post("/", async (req, res) => {
   try {
-    const { prompt } = req.body;
+       const { prompt } = req.body;
     if (!prompt) return res.status(400).json({ error: "Prompt is required" });
 
-    const pythonScript = path.join(process.cwd(), "backend", "python_ml", "annotate_pipeline.py");
-    const outputDir = path.join(process.cwd(), "backend", "generated");
-    const datasetFolder = path.join(outputDir, "dataset_output");
+    const pythonScript = path.join(process.cwd(), "python_ml","auto_label", "annotate_pipeline.py");
+    const outputDir = path.join(process.cwd(), "python_ml", "data", "output");
+    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+    const masksDir = path.join(outputDir, "masks");
+    const polysDir = path.join(outputDir, "polygons");
+    const depthDir = path.join(outputDir, "depth");
+    const cocoPath = path.join(outputDir, "coco");
+    const checkpointPath = path.join(process.cwd(), "backend", "python_ml","auto_label", "sam_vit_b.pth");
+    const datasetFolder = outputDir;
     const zipPath = path.join(outputDir, "dataset.zip");
 
-    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
-    if (!fs.existsSync(datasetFolder)) fs.mkdirSync(datasetFolder, { recursive: true });
 
     console.log(`🧠 Running Python ML pipeline for: "${prompt}"`);
 
-    const pythonProcess = spawn("python", [pythonScript, prompt, datasetFolder]);
+    const pythonProcess = spawn("python", [`"${pythonScript}"`, prompt, 
+      outputDir,
+      masksDir,
+      polysDir,
+      depthDir,
+      cocoPath,
+      checkpointPath],{ shell: true });
+
 
     let pythonLogs = "";
     let pythonErrors = "";
@@ -53,6 +84,9 @@ router.post("/", async (req, res) => {
 
     pythonProcess.on("close", async (code) => {
       console.log(`🐍 Python exited with code ${code}`);
+      console.log("Zipping contents of:", datasetFolder);
+      console.log("Python logs:\n", pythonLogs);
+
 
       if (code !== 0) {
         return res.status(500).json({ error: "Python script failed", details: pythonErrors });
@@ -62,17 +96,14 @@ router.post("/", async (req, res) => {
       await zipDirectory(datasetFolder, zipPath);
       console.log(`✅ Dataset zipped at: ${zipPath}`);
 
-     const imagePreviews = Array.from({ length: 10 }, (_, i) => ({
-        url: `https://picsum.photos/400?random=${Math.floor(Math.random() * 9999)}`,
-      }));
 
-      // Send response
       res.json({
-        message: "Dataset generated successfully",
-        images: imagePreviews,
+        message: "Dataset zipped successfully",
         datasetZip: "/downloads/dataset.zip",
       });
+
     });
+
   } catch (err) {
     console.error("❌ Backend Error:", err);
     res.status(500).json({ error: "Internal Server Error" });

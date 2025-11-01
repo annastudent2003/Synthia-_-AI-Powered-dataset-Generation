@@ -1,0 +1,6 @@
+torch
+numpy
+imageio
+opencv-python
+Pillow
+git+https://github.com/facebookresearch/segment-anything.git

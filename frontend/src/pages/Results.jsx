@@ -11,48 +11,62 @@ export default function Results() {
   const [loading, setLoading] = useState(false);
   const [datasetLink, setDatasetLink] = useState("");
 
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const API_URL = process.env.API_URL || "http://localhost:5000";
+  console.log("Backend URL →", API_URL);
 
-  // Function to call backend
-  const fetchResults = async (userPrompt = prompt) => {
+  // 🔹 Fetch preview images (lightweight)
+  const fetchPreview = async (userPrompt = prompt) => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/generate`, {
+      const res = await fetch(`${API_URL}/generate/preview`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: userPrompt }),
       });
       const data = await res.json();
       setImages(data.images || []);
-      setDatasetLink(data.datasetZip || "");
     } catch (err) {
-      console.error("Error fetching results:", err);
+      console.error("Error fetching preview:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // On first load
+  // 🔹 Trigger heavy pipeline only on download
+  const handleDownload = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      if (data.datasetZip) {
+        window.open(`${API_URL}${data.datasetZip}`, "_blank");
+      }
+    } catch (err) {
+      console.error("Error during download:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔹 On first load
   useEffect(() => {
-    if (prompt) fetchResults(prompt);
-  }, []);
+    if (prompt) fetchPreview(prompt);
+  }, [prompt]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (prompt.trim() !== "") {
       navigate(`/results?prompt=${encodeURIComponent(prompt)}`);
-      fetchResults(prompt);
+      fetchPreview(prompt);
     }
   };
 
   const handleRegenerate = () => {
-    fetchResults(prompt);
-  };
-
-  const handleDownload = () => {
-    if (datasetLink) {
-      window.open(`${API_URL}${datasetLink}`, "_blank");
-    }
+    fetchPreview(prompt);
   };
 
   return (
@@ -77,7 +91,7 @@ export default function Results() {
       </div>
 
       {loading ? (
-        <div className="loading-text">Generating images...</div>
+        <div className="loading-text">Processing...</div>
       ) : (
         <div className="results-grid">
           {images.map((img, i) => (
