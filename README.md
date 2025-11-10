@@ -55,3 +55,21 @@ pip install opencv-python imageio numpy pillow
 pip install git+https://github.com/facebookresearch/segment-anything.git
 pip install timm
 ```
+
+📝 Note: The system currently runs on CPU-based environments (no GPU required).
+
+## 🧰 Tech Stack
+
+| Layer             | Technologies Used                             |
+
+| ----------------- | --------------------------------------------- |
+
+| **Frontend**      | React.js, HTML, CSS, JavaScript               |
+
+| **Backend**       | Node.js, Express.js, Body-Parser, Archiver    |
+
+| **ML Engine**     | Python, PyTorch, SAM, MiDaS, OpenCV           |
+
+| **Communication** | REST API (JSON)                               |
+
+| **Output**        | Labeled image dataset (COCO JSON, PNG format) |
