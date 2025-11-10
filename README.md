@@ -69,3 +69,33 @@ pip install timm
 **Communication**  -  REST API (JSON)                               
 
 **Output**  -  Labeled image dataset (COCO JSON, PNG format) 
+
+## 🧪 API Reference
+### POST /generate
+#### Request Body:
+```json
+{ "prompt": "cars on the road" }
+```
+
+#### Response:
+```json
+{
+  "message": "Dataset generated successfully",
+  "images": [
+    { "url": "https://picsum.photos/400?random=12" },
+    ...
+  ],
+  "datasetZip": "/downloads/dataset.zip"
+}
+```
+
+## 🔮 Future Scope
+1. Deploy the ML pipeline on GPU-based or cloud environments to enable faster image generation and annotation.
+
+2. Integrate advanced generative models such as Stable Diffusion or GANs for more realistic image synthesis.
+
+3. Implement user authentication, prompt history, and dataset management features.
+
+4. Expand into a web service platform allowing developers to request datasets through APIs.
+
+5. Optimize backend for batch processing and real-time dataset streaming.
