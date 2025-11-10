@@ -60,16 +60,12 @@ pip install timm
 
 ## 🧰 Tech Stack
 
-| Layer             | Technologies Used                             |
+**Frontend**  -  React.js, HTML, CSS, JavaScript               
 
-| ----------------- | --------------------------------------------- |
+**Backend** -  Node.js, Express.js, Body-Parser, Archiver    
 
-| **Frontend**      | React.js, HTML, CSS, JavaScript               |
+**ML Engine**  -  Python, PyTorch, SAM, MiDaS, OpenCV           
 
-| **Backend**       | Node.js, Express.js, Body-Parser, Archiver    |
+**Communication**  -  REST API (JSON)                               
 
-| **ML Engine**     | Python, PyTorch, SAM, MiDaS, OpenCV           |
-
-| **Communication** | REST API (JSON)                               |
-
-| **Output**        | Labeled image dataset (COCO JSON, PNG format) |
+**Output**  -  Labeled image dataset (COCO JSON, PNG format) 
